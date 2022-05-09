@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/user/.gradle/caches/transforms-3/32578e3744ef87bd57b204a21d4e0ce2/transformed/appcompat-1.4.1/res/drawable/abc_btn_check_material.xml" value="0.1765" />
+        <entry key="..\:/Users/user/.gradle/caches/transforms-3/8869a010f5b7951d729c5bf8c41a21c8/transformed/core-1.8.0-beta01/res/drawable-v21/notification_action_background.xml" value="0.1765" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
