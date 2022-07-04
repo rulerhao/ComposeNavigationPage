@@ -1,5 +1,6 @@
 package com.rulhouse.composenavigationpage
 
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -31,36 +32,18 @@ fun GuideScreenContentArea(
 ) {
     val context = LocalContext.current
 
-    val myChangePageThreshold = if (changePageThreshold > 1 || changePageThreshold < 0) 1 / 3f else changePageThreshold
+    val myChangePageThreshold = remember{ mutableStateOf(if (changePageThreshold > 1 || changePageThreshold < 0) 1 / 3f else changePageThreshold)}
 
-    val width = ScreenMethods.getWidth(context)
-    val widthDp = ScreenMethods.convertPixelToDp(width.toFloat(), context)
+    val width = remember { mutableStateOf(ScreenMethods.getWidth(context))}
+    val widthDp = remember { mutableStateOf(ScreenMethods.convertPixelToDp(ScreenMethods.getWidth(context).toFloat(), context))}
 
     val listState = rememberLazyListState()
 
     val coroutineScope = rememberCoroutineScope()
 
-    var nowIndex = 0
-
-    val firstVisibleIndex = listState.firstVisibleItemIndex
-
-    val firstVisibleItemOffset = listState.firstVisibleItemScrollOffset
+    val nowIndex = remember { mutableStateOf(0)}
 
     val previousIsScrollProgress = remember { mutableStateOf(false) }
-    val isScrollInProgress = listState.isScrollInProgress
-
-    // set new index.
-    nowIndex = if (firstVisibleItemOffset < width * myChangePageThreshold) {
-        firstVisibleIndex
-    } else if (firstVisibleItemOffset > width * (1 - myChangePageThreshold)) {
-        firstVisibleIndex + 1
-    } else {
-        if (firstVisibleIndex < nowIndex) {
-            firstVisibleIndex
-        } else {
-            firstVisibleIndex + 1
-        }
-    }
 
     Column(
         modifier = modifier
@@ -74,13 +57,21 @@ fun GuideScreenContentArea(
 
             ) {
             // if scrollInProgress state changed
-            if (isScrollInProgress != previousIsScrollProgress.value) {
-                previousIsScrollProgress.value = isScrollInProgress
+            if (listState.isScrollInProgress != previousIsScrollProgress.value) {
+                previousIsScrollProgress.value = listState.isScrollInProgress
                 // if changed to stop
-                if (!isScrollInProgress) {
+                if (!listState.isScrollInProgress) {
                     // scroll to new index
                     coroutineScope.launch {
-                        listState.animateScrollToItem(nowIndex)
+                        // set new index.
+                        nowIndex.value = getNowIndex(
+                            firstVisibleItemIndex = listState.firstVisibleItemIndex,
+                            firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset,
+                            nowIndex = nowIndex.value,
+                            width = width.value,
+                            changePageThreshold = myChangePageThreshold.value,
+                        )
+                        listState.animateScrollToItem(nowIndex.value)
                     }
                 }
             }
@@ -89,7 +80,7 @@ fun GuideScreenContentArea(
                     modifier = Modifier
                         .fillMaxHeight()
                         .width(
-                            widthDp.dp
+                            widthDp.value.dp
                         )
                 ) {
                     Icon(
@@ -111,8 +102,22 @@ fun GuideScreenContentArea(
                 modifier = Modifier
                     .align(Alignment.Center),
                 list = resList,
-                nowIndex = nowIndex
+                nowIndex = nowIndex.value
             )
+        }
+    }
+}
+
+private fun getNowIndex(firstVisibleItemScrollOffset: Int, firstVisibleItemIndex: Int, width: Int, nowIndex: Int, changePageThreshold: Float): Int {
+    return if (firstVisibleItemScrollOffset < width * changePageThreshold) {
+        firstVisibleItemIndex
+    } else if (firstVisibleItemScrollOffset > width * (1 - changePageThreshold)) {
+        firstVisibleItemIndex + 1
+    } else {
+        if (firstVisibleItemIndex <= nowIndex) {
+            firstVisibleItemIndex
+        } else {
+            firstVisibleItemIndex + 1
         }
     }
 }
